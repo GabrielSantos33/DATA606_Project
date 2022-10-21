@@ -1,0 +1,144 @@
+---
+title: "Project Proposal"
+author: "Gabriel Santos"
+date: "2022/10/21"
+output:
+  pdf_document: default
+  html_document:
+    includes:
+      in_header: header.html
+    css: ./lab.css
+    highlight: pygments
+    theme: cerulean
+    toc: true
+    toc_float: true
+editor_options: 
+  chunk_output_type: inline
+---
+
+### Data Preparation
+
+The dataset that I am going to use can be found on the page The world bank. The first dataset is Adolescent fertility rate (births per 1,000 women ages 15-19). It is discriminated by each country in the world and the data is indicated from the year 1960 to 2020.
+I am also going to consult the dataset: World Development Indicators: Women and Development, to analyze the relationship of the fertility rates of each country with the economic indicators for women of each country.
+Retrieved from: https://data.worldbank.org/indicator/SP.ADO.TFRT / http://wdi.worldbank.org/table / https://data.worldbank.org/topic/gender
+
+```{r}
+adolescent_fertility_rates <- read.csv("https://raw.githubusercontent.com/GabrielSantos33/DATA606_Project/main/API_SP.ADO.TFRT_DS2_en_csv_v2_4576936.csv", header=TRUE, check.names = FALSE)
+
+economic_indicators <- read.csv("https://raw.githubusercontent.com/GabrielSantos33/DATA606_Project/main/wv.5_Women_and_Development.csv", header=TRUE, check.names = FALSE)
+
+indicators <- read.csv("https://raw.githubusercontent.com/GabrielSantos33/DATA606_Project/main/API_17_DS2_en_csv_v2_4539203_option.csv", header=TRUE, check.names = FALSE)
+```
+
+### Research question 
+
+**You should phrase your research question in a way that matches up with the scope of inference your dataset allows for.**
+
+
+The questions for this project are:
+Which countries have the highest adolescent fertility rates and which countries have the lowest adolescent fertility rates?
+Is there a relationship between economic indicators for women in each country with fertility rates in adolescents? 
+Present an analysis of the result.
+
+
+### Cases 
+
+**What are the cases, and how many are there?**
+
+In the dataset there are 242 countries around the world that contains the Adolescent fertility rate data for each country. There are 242 cases.
+
+
+### Data collection 
+
+**Describe the method of data collection.**
+
+The World Bank collects data from each country year after year of the fertility rate in adolescents aged 15 to 19 years. For this project, the method of data collection is the consultation of the databases that The World Bank has about fertility in adolescents of each country. For the data of economic indicators of women I will also consult the database of The Worlds Bank.
+
+
+### Type of study 
+
+**What type of study is this (observational/experiment)?**
+
+This study is of an observational type, because I am going to analyze the data that the dataset has on the fertility rate in adolescents aged 15 to 19, from the year 1960 to the year 2020.
+
+
+### Data Source 
+
+**If you collected the data, state self-collected. If not, provide a citation/link.**
+
+The data is collected by The World Bank. The links are: Adolescent fertility rate (births per 1,000 women ages 15-19). https://data.worldbank.org/indicator/SP.ADO.TFRT y World Development Indicators: Women and Development the link is: http://wdi.worldbank.org/table/WV.5
+
+
+
+### Dependent Variable
+
+**What is the response variable? Is it quantitative or qualitative?**
+
+The response variable is quantitative.The response variable is the weighted average number of births per 1,000 adolescent women aged 15 to 19 for each country. 
+
+
+### Independent Variable(s)
+
+The independent variables are the economic indicators for women, for example in the dataset it indicates: Women who were first married by age 18, Account ownership at a financial institution or with a mobile-money-service provider, female (% of population ages 15 +).
+
+
+### Relevant summary statistics 
+
+**Provide summary statistics for each the variables. Also include appropriate visualizations related to your research question (e.g. scatter plot, boxplots, etc). This step requires the use of R, hence a code chunk is provided below. Insert more code chunks as needed.**
+
+```{r dataset}
+library(tidyr)
+library(dplyr)
+library(ggplot2)
+```
+
+```{r}
+tidy_adolescent_fertility <- gather(adolescent_fertility_rates, "year", "rate", 5:60) 
+colnames(tidy_adolescent_fertility)[colnames(tidy_adolescent_fertility) == "Country Name"] <- "Country"
+tidy_adolescent_fertility <- select(tidy_adolescent_fertility, one_of("Country", "year", "rate"))
+head(tidy_adolescent_fertility)
+```
+
+```{r summary}
+summary(tidy_adolescent_fertility)
+```
+
+```{r country1}
+united_states_fertility <- filter(tidy_adolescent_fertility, Country=="United States")
+united_states <- ggplot(united_states_fertility, aes(year, rate))
+united_states + geom_point(color='blue') + theme(axis.text.x = element_text(angle = 90, hjust = 3)) + ggtitle("United States Fertility", subtitle = "Adolescent")
+```
+
+```{r country2}
+niger_fertility <- filter(tidy_adolescent_fertility, Country=="Niger")
+niger <- ggplot(niger_fertility, aes(year, rate))
+niger + geom_point(color='blue') + theme(axis.text.x = element_text(angle = 90, hjust = 3))+ ggtitle("Niger Fertility", subtitle = "Adolescent")
+```
+
+```{r indicator}
+tidy_indicators <- gather(indicators, "year", "n", 5:60) 
+colnames(tidy_indicators)[colnames(tidy_indicators) == "Country Name"] <- "Country"
+colnames(tidy_indicators)[colnames(tidy_indicators) == "Indicator Name"] <- "Indicator"
+tidy_indicators <- select(tidy_indicators, one_of("Country", "Indicator","year", "n"))
+head(tidy_indicators)
+```
+
+
+```{r indicator_country3}
+aruba_total <- filter(tidy_indicators, (Country=="Aruba") & (Indicator == "Fertility rate, total (births per woman)"))
+aruba_total <- ggplot(aruba_total, aes(year, n))
+aruba_total + geom_point(color='blue') + theme(axis.text.x = element_text(angle = 90, hjust = 3))+ ggtitle("Aruba Fertility Total", subtitle = "Births per Female")
+```
+
+```{r indicator_country4}
+australia_unemployment <- filter(tidy_indicators, (Country=="Australia") & (Indicator == "Unemployment, youth female (% of female labor force ages 15-24) (modeled ILO estimate)"))
+australia_unemployment <- ggplot(australia_unemployment, aes(year, n))
+australia_unemployment + geom_point(color='blue') + theme(axis.text.x = element_text(angle = 90, hjust = 3))+ ggtitle("Australia Unemployment", subtitle = "Female - ages 15-24")
+```
+
+```{r indicator_country4.1}
+australia_employment <- filter(tidy_indicators, (Country=="Australia") & (Indicator == "Employment to population ratio, ages 15-24, female (%) (modeled ILO estimate)"))
+australia_employment <- ggplot(australia_employment, aes(year, n))
+australia_employment + geom_point(color='blue') + theme(axis.text.x = element_text(angle = 90, hjust = 3))+ ggtitle("Australia Employment", subtitle = "Female - ages 15-24")
+```
+
