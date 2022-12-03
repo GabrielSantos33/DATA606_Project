@@ -1,0 +1,554 @@
+---
+title: "Analysis adolescent Fertility rates    Final Project Data 606  "
+author: "Gabriel Santos"
+date: "2022-11-29"
+output:
+  ioslides_presentation:
+    incremental: no
+    sel-incluided: yes
+    widescreen: yes
+    editor_options:
+      chunk_output_type: console
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+## Abstract
+
+I recently read an article in "The New York Times" about the problems of teenage pregnancies. The article mentioned that there are countries where teenage pregnancy is common. I decided to review which are the countries that have the most impact on this topic.
+
+\
+
+The questions I asked myself were the following:
+
+-Which countries have the highest adolescent fertility rates and which countries have the lowest adolescent fertility rates?
+
+-Is there a relationship between economic indicators for women in the country with fertility rates in adolescents?
+
+
+
+## Data Collection
+
+The dataset that I used can be found on the page The world bank. The World Bank collects data from each country year after year of the fertility rate in adolescents aged 15 to 19 years. It is discriminated by each country in the world and the data is indicated from the year 1960 to 2015. I also queried the dataset: World Development Indicators: Women and Development, to analyze the relationship of the fertility rates of each country with the economic indicators for women of each country.
+
+<div>
+
+<p style="text-align:center;">
+
+![The World Bank:](https://www.worldbank.org/content/dam/wbr/logo/logo-wb-header-en.svg){width="400px"}
+
+</p>
+
+</div>
+
+https://data.worldbank.org/indicator/SP.ADO.TFRT 
+
+## Data
+
+**Type of study**
+
+This study is of an observational type, because I am going to analyze the data that the dataset has on the
+fertility rate in adolescents aged 15 to 19, from the year 1960 to the year 2015.
+
+\
+
+
+**Dependent Variable**
+
+The dependet variable is quantitative.The response variable is the weighted average number of births per 1,000 adolescent women aged 15 to 19 for each country. 
+
+Variable name: adolescent_fertility_rates
+
+## Data
+
+**Independent Variable**
+
+The independent variables are the economic indicators for women, for example in the dataset it indicates: Women who were first married by age 18, Account ownership at a financial institution of female (% of population ages 15 +), and survival to age 65. 
+
+Variables names: survival_female, survival_male, unemployment_youth_female, employment_youth_female, employment_female, labor_force, salaried_female.
+
+
+```{r echo=FALSE}
+adolescent_fertility_rates <- read.csv("https://raw.githubusercontent.com/GabrielSantos33/DATA606_Project/main/API_SP.ADO.TFRT_DS2_en_csv_v2_4576936.csv", header=TRUE, check.names = FALSE)
+
+economic_indicators <- read.csv("https://raw.githubusercontent.com/GabrielSantos33/DATA606_Project/main/wv.5_Women_and_Development.csv", header=TRUE, check.names = FALSE)
+
+indicators <- read.csv("https://raw.githubusercontent.com/GabrielSantos33/DATA606_Project/main/API_17_DS2_en_csv_v2_4539203_option.csv", header=TRUE, check.names = FALSE)
+```
+
+```{r message=FALSE}
+library(tidyr)
+library(dplyr)
+library(ggplot2)
+```
+
+## Research question
+
+
+I asked myself the following:
+
+\
+
+-Which countries have the highest adolescent fertility rates and which countries have the lowest adolescent fertility rates?
+
+\
+
+-Is there a relationship between economic indicators for women in the country with fertility rates in adolescents?
+
+
+## Summary statistics
+
+
+
+I did perform the analysis to find the countries with the highest adolescent fertility rates and countries have the lowest adolescent fertility rates.
+
+\ 
+
+I decided to graph the 5 countries with the highest rates and the 5 countries with the lowest rates.
+
+\ 
+
+In the statistical analysis that we are going to carry out, we are going to take only the country with the highest fertility rate in adolescents and the country with the lowest fertility rate in adolescents.
+
+
+```{r, echo=FALSE, results='hide'}
+tidy_adolescent_fertility <- gather(adolescent_fertility_rates, "year", "rate", 5:60) 
+colnames(tidy_adolescent_fertility)[colnames(tidy_adolescent_fertility) == "Country Name"] <- "Country"
+tidy_adolescent_fertility <- select(tidy_adolescent_fertility, one_of("Country", "year", "rate"))
+head(tidy_adolescent_fertility)
+```
+
+```{r summary, echo=FALSE, results='hide'}
+summary(tidy_adolescent_fertility)
+```
+
+## Graph - Hightest
+
+```{r, echo=FALSE, fig.align='center'}
+ggplot(data = tidy_adolescent_fertility[tidy_adolescent_fertility$Country == "Niger"| tidy_adolescent_fertility$Country =="Mali" | tidy_adolescent_fertility$Country =="Chad" | tidy_adolescent_fertility$Country =="Equatorial Guinea"| tidy_adolescent_fertility$Country =="Angola",], 
+  aes(x = year, y = rate, color =Country,)) +  
+  geom_point() + 
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  ggtitle("Comparison countries with highest adolescent fertility rates", subtitle = "Weighted average number of births per 1,000 adolescent women")
+```
+
+
+
+## Graph - Lowest
+
+
+```{r, echo=FALSE, fig.align='center'}
+ggplot(data = tidy_adolescent_fertility[tidy_adolescent_fertility$Country == "Korea, Rep."| tidy_adolescent_fertility$Country =="Switzerland" | tidy_adolescent_fertility$Country =="Singapore" | tidy_adolescent_fertility$Country =="Netherlands"| tidy_adolescent_fertility$Country =="Japan",], 
+  aes(x = year, y = rate, color =Country,)) +  
+  geom_point() + 
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  ggtitle("Comparison countries with lowest adolescent fertility rates", subtitle = "Weighted average number of births per 1,000 adolescent women")
+```
+
+## Statistical 
+
+How is the behavior of the adolescents fertility rate in  worldwide? 
+
+I find that the data is skewed to the left. In our data set, it means that most countries have 0 to 100 births per thousand women aged 15 to 19 years.
+
+
+```{r indicator, results='hide'}
+tidy_indicators <- gather(indicators, "year", "n", 5:60) 
+colnames(tidy_indicators)[colnames(tidy_indicators) == "Country Name"] <- "Country"
+colnames(tidy_indicators)[colnames(tidy_indicators) == "Indicator Name"] <- "Indicator"
+tidy_indicators <- select(tidy_indicators, one_of("Country", "Indicator","year", "n"))
+head(tidy_indicators)
+```
+
+```{r fertility_adolescent, message=FALSE, warning=FALSE, fig.width=7, fig.height=4, fig.align='center'}
+fertility_adolescent <- tidy_indicators %>%
+  filter(Indicator == "Adolescent fertility rate (births per 1,000 women ages 15-19)")
+a <- ggplot(fertility_adolescent, aes(n))
+a + geom_density(color='blue') + theme(axis.text.x = element_text(angle = 0, hjust = 3))+ ggtitle("Fertility adolescent", subtitle = "Births per 1000 woman adolescent")
+```
+
+```{r, echo=FALSE}
+tidy_total <- tidy_indicators %>%
+  filter(Indicator == "Survival to age 65, female " | Indicator == "Survival to age 65, male " |  Indicator == "Adolescent fertility rate (births per 1,000 women ages 15-19)" | Indicator == "Unemployment, youth female (% of female labor force ages 15-24) (modeled ILO estimate)" | Indicator == "Employment to population ratio, 15+, female (%) (modeled ILO estimate)" | Indicator == "Labor force, female (% of total labor force)" | Indicator == "Employment to population ratio, ages 15-24, female (%) (modeled ILO estimate)" | Indicator == "Wage and salaried workers, female (% of female employment) (modeled ILO estimate)" | Indicator == "Women making their own informed decisions regarding sexual relations, contraceptive use and reproductive health care  (% of women age 15-49)")
+```
+
+```{r, echo=FALSE}
+analysis_total <- tidy_total %>%
+  pivot_wider(names_from = 'Indicator', values_from = 'n')
+```
+
+```{r, echo=FALSE}
+colnames(analysis_total)[colnames(analysis_total) == "Adolescent fertility rate (births per 1,000 women ages 15-19)"] <- "fertility_rate"
+
+colnames(analysis_total)[colnames(analysis_total) == "Survival to age 65, female "] <- "survival_female"
+
+colnames(analysis_total)[colnames(analysis_total) == "Survival to age 65, male "] <- "survival_male"
+
+colnames(analysis_total)[colnames(analysis_total) == "Unemployment, youth female (% of female labor force ages 15-24) (modeled ILO estimate)"] <- "unemployment_youth_female"
+
+colnames(analysis_total)[colnames(analysis_total) == "Employment to population ratio, 15+, female (%) (modeled ILO estimate)"] <- "employment_female"
+
+colnames(analysis_total)[colnames(analysis_total) == "Labor force, female (% of total labor force)"] <- "labor_force"
+
+colnames(analysis_total)[colnames(analysis_total) == "Employment to population ratio, ages 15-24, female (%) (modeled ILO estimate)"] <- "employment_youth_female"
+
+colnames(analysis_total)[colnames(analysis_total) == "Wage and salaried workers, female (% of female employment) (modeled ILO estimate)"] <- "salaried_female"
+
+colnames(analysis_total)[colnames(analysis_total) == "Women making their own informed decisions regarding sexual relations, contraceptive use and reproductive health care  (% of women age 15-49)"] <- "healthcare_reproductive_female"
+```
+
+
+```{r, echo=FALSE, results='hide'}
+summary(analysis_total)
+```
+
+
+I did choose an independent variable, which is the 65-year survival rate, to perform a linear regression.
+I did compare if there is a relationship between the fertility rate in adolescents and the indicator of survival up to 65 years. Regression model used LM (linear model)
+
+```{r, echo=FALSE}
+m_surv_tot <- lm(fertility_rate ~ survival_male + survival_female, data = analysis_total)
+summary(m_surv_tot)
+```
+**The equation is:**
+
+
+\[
+ \hat{y} \ ( fertility\_adolescent) = 245.61292 \ + \ 0.97001 \ * \ survival_male \ - \ 3.27642 \ * \ survival_female
+\]
+
+
+
+
+Survival variables for both men and women are correlated with fertility rates in adolescent women. Births per 1000 adolescent women is 245.61. As male survival increases, births increase by 0.97001. And as female survival increases, births decrease by 3.27642.
+This could be due to the fact that the more adult women there are, it can influence a little that decreases the adolescent fertility in women.
+
+
+```{r, echo=FALSE}
+ggplot(data = m_surv_tot, aes(sample = m_surv_tot$residuals)) +
+  stat_qq(col='blue') + stat_qq_line() + ggtitle('Normal Q-Q Plot') + xlab('Theoretical Quantiles')+    ylab('Sample Quantiles')
+```
+
+
+Analyzing the graphs the result is a normal distribution skewed to the left. 
+
+
+```{r}
+ggplot(data = m_surv_tot, aes(x = m_surv_tot$residuals)) +
+  geom_histogram(binwidth = 3, fill='darkblue') +
+  xlab("Residuals")
+```
+
+
+
+
+I did perform the analysis for the country with the highest adolescent fertility rate
+
+
+```{r Niger, message=FALSE}
+niger_fertility <- filter(tidy_adolescent_fertility, Country=="Niger")
+niger <- ggplot(niger_fertility, aes(year, rate))
+niger + geom_point(color='blue') + theme(axis.text.x = element_text(angle = 90, hjust = 3))+ ggtitle("Nigeria Fertility", subtitle = "Adolescent")
+```
+
+
+
+## Statistical - NIGERIA
+
+In the case of Nigeria I can see that the density is much higher in the fertility rate in adolescents compared to the density worldwide.
+I saw that the data is skewed to the right. In our data set, it means that Nigeria has more than 160 births per 1,000 women aged 15-19.
+
+```{r fertilityniger, message=FALSE, fig.width=7, fig.height=4, fig.align='center'}
+Niger <- tidy_indicators %>%
+ filter(Country == "Nigeria")
+fertility_niger <- Niger %>%
+   filter(Indicator == "Adolescent fertility rate (births per 1,000 women ages 15-19)")
+a <- ggplot(fertility_niger, aes(n))
+a + geom_density(color='blue') + theme(axis.text.x = element_text(angle = 0, hjust = 3))+ ggtitle("Nigeria - Fertility adolescent", subtitle = "Births per 1000 woman adolescent")
+```
+
+```{r Niger1}
+niger_survival <- filter(analysis_total, Country=="Nigeria")
+```
+
+## Statistical - NIGERIA
+
+\
+
+
+I did choose an independent variable, which is the 65-year survival rate, to perform a linear regression.
+I did compare if there is a relationship between the fertility rate in adolescents and the indicator of survival up to 65 years. Regression model used LM (linear model)
+
+
+##
+
+```{r, fig.height=4}
+m_surv_niger <- lm(fertility_rate ~ survival_male + survival_female, data = niger_survival)
+summary(m_surv_niger)
+```
+
+## Statistical - NIGERIA
+
+**The equation is:**
+
+
+\[
+ \hat{y} \ ( Niger\_fertility\_adolescent) = 112.771 \ - \ 18.994 \ * \ survival\_male  
+\]
+
+\[
+ \ + \ 17.509 \ * \ survival\_female
+\]
+
+In Nigeria the births per 1000 adolescent women is 112.71.As male survival increases, births decrease by 18,994.And as female survival increases, births increase by 17,509.
+This could be due to socio-economic issues, according to the article "Outcome of Teenage Pregnancy in the Niger Delta of Nigeria" of the Ethiopian Journal of Health Science, adolescent pregnancies are concentrated in women of low economic levels and with less formal education .
+
+\
+
+https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3437979/
+
+
+
+```{r}
+Niger_indicators <- Niger %>%
+  filter(Indicator == "Survival to age 65, female " | Indicator == "Survival to age 65, male " |  Indicator == "Adolescent fertility rate (births per 1,000 women ages 15-19)" | Indicator == "Fertility rate, total (births per woman)" | Indicator == "Life expectancy at birth, female (years)")
+```
+
+
+## Statistical - NIGERIA
+
+In the following graph we can see that the fertility rate in adolescents is much higher than the total fertility of women in Nigeria.
+Additionally, we can observe the relationship with life expectancy at birth and the survival rate at 65 years.
+
+
+```{r, fig.width=7, fig.height=4, fig.align='center'}
+f <- ggplot(data=Niger_indicators, aes(year, n, group=Indicator))
+f + geom_line(aes(color=Indicator)) + theme(axis.text.x = element_blank() ) + ggtitle("Nigeria", subtitle = "Indicators") 
+```
+
+## Backward elimination
+
+I analyzed the data set for women of the Nigeria, related to employment.
+
+```{r Niger employment}
+niger_employment <- filter(analysis_total, Country=="Nigeria")
+```
+
+```{r m_full niger, tidy = FALSE, results='hide'}
+m_full_niger <- lm(fertility_rate ~ unemployment_youth_female + employment_youth_female + employment_female + labor_force + salaried_female, data = niger_employment)
+summary(m_full_niger)
+```
+
+\
+
+I removed the variables with the highest P-values. The coefficient of rate of fertility is 763.3636. The variable increases the score by 736.3636, when the other variables are constant.
+The model in terms of $R^2$ is very good. I think these variables are not very good at determining the reasons for the high teenage pregnancy rates in Nigeria.
+
+##
+```{r, }
+back_model_niger <- lm(fertility_rate ~ employment_female + labor_force + salaried_female, data = niger_employment)
+summary(back_model_niger)
+```
+
+
+
+## Backward elimination
+
+
+```{r}
+ggplot(data = back_model_niger, aes(sample = .resid)) +
+  stat_qq(col='blue') + stat_qq_line()
+```
+
+
+## Backward elimination
+
+I wanted to see if for a single variable that is unemployment_youth_female in Nigeria it had a correlation with the pregnancy rates of young women.
+I thought that younger women who were employed were more likely to have lower fertility rates. But the results are not like that, I see that there is no logical relationship, because as employment in young women increases, the pregnancy rate in young women increases. 
+
+##
+```{r}
+m_employ_niger2 <- lm(fertility_rate ~ employment_youth_female, data = niger_employment)
+summary(m_employ_niger2)
+```
+
+\
+
+\
+
+ (JAPAN)
+
+```{r Japan, message=FALSE}
+japan_fertility <- filter(tidy_adolescent_fertility, Country=="Japan")
+niger <- ggplot(japan_fertility, aes(year, rate))
+niger + geom_point(color='blue') + theme(axis.text.x = element_text(angle = 90, hjust = 3))+ ggtitle("Japan Fertility", subtitle = "Adolescent")
+```
+
+
+## Statistical - JAPAN
+
+I did perform the analysis for the country with the lowest adolescent fertility rate:
+
+\
+
+For Japan we can see that the density is much lower than the fertility rate in adolescents compared to the density worldwide.
+I did notice that the data is skewed to the left. In our data set, it means that Japan has 4-5 births per 1000 women ages 15-19.
+
+## Statistical - JAPAN
+
+```{r fertilityjapan, message=FALSE}
+Japan <- tidy_indicators %>%
+ filter(Country == "Japan")
+fertility_japan <- Japan %>%
+   filter(Indicator == "Adolescent fertility rate (births per 1,000 women ages 15-19)")
+a <- ggplot(fertility_japan, aes(n))
+a + geom_density(color='blue') + theme(axis.text.x = element_text(angle = 0, hjust = 3))+ ggtitle("Japan - Fertility adolescent", subtitle = "Births per 1000 woman adolescent")
+```
+
+```{r Japan1, results='hide'}
+japan_survival <- filter(analysis_total, Country=="Japan")
+```
+
+
+```{r, results='hide'}
+m_surv_japan <- lm(fertility_rate ~ survival_male + survival_female, data = japan_survival)
+summary(m_surv_japan)
+```
+
+
+## Statistical - JAPAN
+
+\
+
+**The equation is:**
+
+
+\[
+ \hat{y} \ ( Japan\_fertility\_adolescent) = 8.09900 \ + \ 0.22800 \ * \ survival\_male 
+\]
+
+\[
+ \\-  \ 0.24806 \ * \ survival\_female
+\]
+
+\
+
+In Japan, births per 1,000 adolescent women is 8,099. As male survival increases, births increase by 0.22800. And as female survival increases, births decrease by 0.24806.
+This could be due to socio-economic issues, Japan is a very organized country with high levels of education.
+
+
+
+```{r}
+Japan_indicators <- Japan %>%
+  filter(Indicator == "Survival to age 65, female " | Indicator == "Survival to age 65, male " |  Indicator == "Adolescent fertility rate (births per 1,000 women ages 15-19)" | Indicator == "Fertility rate, total (births per woman)" | Indicator == "Life expectancy at birth, female (years)")
+```
+
+
+## Statistical - JAPAN
+
+In the following graph we can see that the fertility rate in adolescents is very low, and is similar to the total fertility of women in Japan.
+Additionally, we can observe the relationship with life expectancy at birth and the survival rate at 65 years, both indicators are very similar.
+
+```{r, fig.width=6, fig.height=4, fig.align='center'}
+f <- ggplot(data=Japan_indicators, aes(year, n, group=Indicator))
+f + geom_line(aes(color=Indicator)) + theme(axis.text.x = element_blank() ) + ggtitle("Japan", subtitle = "Indicators") 
+```
+
+
+## Backward elimination
+
+I analyzed the data set for women of the Japan: related to employment
+
+\
+
+```{r Japan employment}
+japan_employment <- filter(analysis_total, Country=="Japan")
+```
+
+```{r m_full japan, tidy = FALSE, results='hide'}
+m_full_japan <- lm(fertility_rate ~ unemployment_youth_female + employment_youth_female + employment_female + labor_force + salaried_female, data = japan_employment)
+summary(m_full_japan)
+```
+
+I removed the variables with the highest P-values. The coefficient of rate of fertility is 25.07778. The variable increases the score by 25.07778, when the other variables are constant.
+The model in terms of $R^2$ is very good. I think these variables are not very good at determining the reasons for the low teenage pregnancy rates in Japan.
+Because there may be other variables that are affecting the low fertility rates in adolescent women in Japan.
+
+
+```{r back model2, results='hide'}
+back_model_japan <- lm(fertility_rate ~ employment_female , data = japan_employment)
+summary(back_model_japan)
+```
+
+## Backward elimination
+
+```{r}
+ggplot(data = back_model_japan, aes(sample = .resid)) +
+  stat_qq(col='blue') + stat_qq_line()
+```
+
+
+
+## Conclusion
+
+Using the data set from The world bank, determine that
+
+The countries with the highest birth rate in adolescents are:
+
+-Niger
+
+-Mali
+
+-Chad
+
+-Equatorial Guinea
+
+-Angola
+
+
+
+## Conclusion
+
+
+The countries with the lowest adolescent birth rate are:
+
+-Korea
+
+-Switzerland
+
+-Singapore
+
+-Netherlands
+
+-Japan
+
+
+
+## Conclusion
+
+When I started this study I thought I was going to have to find a correlation between the fertility rates of the countries with the economic indicators.
+
+\
+
+One of the questions raised was:
+
+-Is there a relationship between economic indicators for women in the country with fertility rates in adolescents? 
+
+The answers is that there is no relationship between economic indicators and adolescent fertility rates.Especially in terms of employment indicators.
+
+If they can contribute something, but it is not the main reason for a country to have more or less fertility rates in adolescents.
+
+## Conclusion
+
+There are many reasons that can affect a country to have high fertility rates in adolescents, education, economics, cultural issues or traditions, or the sum of different aspects of the country. 
+
+\
+
+This analysis is important because fertility prevention initiatives can be created for adolescents in developing countries.
+
+The main limitations are that information on some indicators is missing for some countries or specific years. The world bank depends on the data provided by each government or official organizations of each country, but in many cases these data are incomplete.
+
+
